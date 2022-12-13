@@ -15,7 +15,7 @@ pipeline {
 	stages {
 		stage('Fetch code') {
 			steps {
-				git branch: 'docker', url: 'https://github.com/devopshydclub/vprofile-project.git'
+				git branch: 'AWS-Setup-Tomcat', url: 'https://github.com/RushiDonga/Jenkins-CICD.git'
 			}
 		}
 	    
