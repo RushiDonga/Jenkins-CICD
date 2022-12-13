@@ -5,47 +5,37 @@ def COLOR_MAP = [
 
 pipeline {
 	agent any
-	
-	environment {
-		registryCredential = 'ecr:ap-south-1:AWSCRED'
-		appRegistry = "283227483309.dkr.ecr.ap-south-1.amazonaws.com/vprofileapp"
-		vprofileRegistry = "https://283227483309.dkr.ecr.ap-south-1.amazonaws.com"
-        }
 
 	stages {
-		stage('Fetch code') {
-			steps {
-				git branch: 'docker', url: 'https://github.com/devopshydclub/vprofile-project.git'
-			}
-		}
-	    
-		stage('Build App Image') {
-			steps {
-	       
-		 		script {
-		        		dockerImage = docker.build( appRegistry + ":$BUILD_NUMBER", "./Docker-files/app/multistage/")
-		     		}
-	     		}
-	    	}
-	    	
-	    	stage('Upload App Image') {
-			steps{
-		    		script {
-		     	 		docker.withRegistry( vprofileRegistry, registryCredential ) {
-		        			dockerImage.push("$BUILD_NUMBER")
-		        			dockerImage.push('latest')
-		      			}
-		    		}
-		  	}
-	     	}
+	    stage('Fetch code') {
+		    steps {
+		       git branch: 'master', url: 'https://github.com/RushiDonga/test-react.git'
+		    }
+
+	    }
+
+	    stage('Build'){
+	        steps{
+	           sh 'npm install'
+	           sh 'npm run build'
+	           sh 'zip -r build-V$BUILD_ID.zip build'
+	        }
+	        
+	    	post {
+	           success {
+	              echo "Now archiving"
+	              archiveArtifacts artifacts: '*.zip'
+	           }
+	        }
+	    }
 	}
-     	
+	
 	post{
 		always{
 			echo 'Slack Notification.'
-			slackSend channel: '#image',
+			slackSend channel: '#jenkins-cicd',
 				color: COLOR_MAP[currentBuild.currentResult],
-				message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n This is a Test Notification"
+				message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n MOre info at: ${}"
 		}
 	}
 }
